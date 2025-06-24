@@ -6,6 +6,7 @@ WIDTH=1400
 HEIGHT=800
 
 screen=pygame.display.set_mode((WIDTH,HEIGHT))
+pygame.display.set_caption("Space Invaders")
 
 shipw=70
 shiph=50
@@ -14,6 +15,10 @@ ship1y=400
 ship2x=1325
 ship2y=400
 speed=5
+fps=60
+
+ship1collision=pygame.USEREVENT+1
+ship2collision=pygame.USEREVENT+2
 
 font1=pygame.font.SysFont("Arial",63)
 background=pygame.image.load(r"C:\Users\ragha\OneDrive\Desktop\Pro-Game Developer\spaceinvaders\images\background.jpg")
@@ -25,6 +30,8 @@ ship2=pygame.image.load(r"C:\Users\ragha\OneDrive\Desktop\Pro-Game Developer\spa
 ship2=pygame.transform.scale(ship2,(shipw,shiph))
 ship2=pygame.transform.rotate(ship2,270)
 divider=pygame.Rect(WIDTH/2-7,0,14,HEIGHT)
+bullethitsound=pygame.mixer.Sound(r"C:\Users\ragha\OneDrive\Desktop\Pro-Game Developer\spaceinvaders\images\Grenade+1.mp3")
+bulletfiresound=pygame.mixer.Sound(r"C:\Users\ragha\OneDrive\Desktop\Pro-Game Developer\spaceinvaders\images\Gun+Silencer.mp3")
 
 def maingame():
     ship1rect=pygame.Rect(ship1x,ship1y,shipw,shiph)
@@ -34,12 +41,16 @@ def maingame():
     bulletship1=[]
     bulletship2=[]
     run=True
+    clock=pygame.time.Clock()
     while run:
+        clock.tick(fps)
         screen.blit(background,(0,0))
         screen.blit(ship1,(ship1rect.x,ship1rect.y))
         screen.blit(ship2,(ship2rect.x,ship2rect.y))
         text1=font1.render("Health:"+str(ship1health),True,(255,255,255))
+        text2=font1.render("Health:"+str(ship2health),True,(255,255,255))
         screen.blit(text1,(10,10))
+        screen.blit(text2,(1075,10))
         for bullet in bulletship1:
             pygame.draw.rect(screen,(255,0,0),bullet)
         for bullet in bulletship2:
@@ -54,14 +65,33 @@ def maingame():
                 if event.key==pygame.K_e:
                     bullet=pygame.Rect(ship1rect.right,ship1rect.y+shiph/2,10,6)
                     bulletship1.append(bullet)
+                    bulletfiresound.play()
                 if event.key==pygame.K_u:
                     bullet=pygame.Rect(ship2rect.left,ship2rect.y+shiph/2,10,6)
                     bulletship2.append(bullet)
+                    bulletfiresound.play()
+            if event.type==ship2collision:
+                ship2health=ship2health-10
+                bullethitsound.play()
+            if event.type==ship1collision:
+                ship1health=ship1health-10
+                bullethitsound.play()
         keys=pygame.key.get_pressed()   
         ship1movement(keys,ship1rect)
         ship2movement(keys,ship2rect)
         bulletmovement(ship1rect,ship2rect,bulletship1,bulletship2)
-        
+        winner=""
+        if ship1health<=0:
+            winner="ship2"
+        if ship2health<=0:
+            winner="ship1"
+        if winner!="":
+            text3=font1.render("Winner:"+str(winner),True,(255,255,255))
+            screen.blit(text3,(550,HEIGHT/2))
+            pygame.display.update()
+            pygame.time.delay(6000)
+            break
+    maingame()       
 
 def ship1movement(keyspressed,ship1rect):
     if keyspressed[pygame.K_w] and ship1rect.top>0:
@@ -89,9 +119,15 @@ def bulletmovement(ship1rect,ship2rect,bulletship1,bulletship2):
         bullet.x=bullet.x+5
         if bullet.x>=WIDTH:
             bulletship1.remove(bullet)
+        if ship2rect.colliderect(bullet):
+            pygame.event.post(pygame.event.Event(ship2collision))
+            bulletship1.remove(bullet)
     for bullet in bulletship2:
         bullet.x=bullet.x-5
         if bullet.x<=0:
+            bulletship2.remove(bullet)
+        if ship1rect.colliderect(bullet):
+            pygame.event.post(pygame.event.Event(ship1collision))
             bulletship2.remove(bullet)
     
 
