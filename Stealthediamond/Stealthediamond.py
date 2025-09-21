@@ -15,6 +15,8 @@ wallheight=20
 fps=60
 clock=pygame.time.Clock()
 numberofgaurds=3
+font=pygame.font.SysFont("Ariel", 40)
+text1=font.render("EXIT",True,(255,0,0))
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self,wallx,wally,alignment):
@@ -35,14 +37,18 @@ class Rober(pygame.sprite.Sprite):
         self.rect=self.image.get_rect()
         self.rect.center=(roberx,robery)
     def update(self,keydown):
-        if self.rect.y>=5 and keydown[pygame.K_w]:
-            self.rect.y=self.rect.y-self.speed
-        if self.rect.y<=750 and keydown[pygame.K_s]:
-            self.rect.y=self.rect.y+self.speed
-        if self.rect.x<=950 and keydown[pygame.K_d]:
-            self.rect.x=self.rect.x+self.speed
-        if self.rect.x>=0 and keydown[pygame.K_a]:
-            self.rect.x=self.rect.x-self.speed
+        for wall in walls:
+            if self.rect.y>=5 and keydown[pygame.K_w]:
+                self.rect.y=self.rect.y-self.speed
+            if self.rect.y<=750 and keydown[pygame.K_s]:
+                self.rect.y=self.rect.y+self.speed
+            if self.rect.x<=950 and keydown[pygame.K_d]:
+                self.rect.x=self.rect.x+self.speed
+            if self.rect.x>=0 and keydown[pygame.K_a]:
+                self.rect.x=self.rect.x-self.speed
+    def getroberpos(self):
+        return self.rect.x,self.rect.y
+
 
 class Diamond(pygame.sprite.Sprite):
     def __init__(self,diamondx,diamondy):
@@ -51,6 +57,8 @@ class Diamond(pygame.sprite.Sprite):
         self.image=pygame.transform.scale(self.image,(50,50))
         self.rect=self.image.get_rect()
         self.rect.center=(diamondx,diamondy)
+    def new_movement(self,newdiamondpos):
+        self.rect.center=newdiamondpos
 
 class Gaurd(pygame.sprite.Sprite):
     gaurdspeed=2
@@ -65,7 +73,7 @@ class Gaurd(pygame.sprite.Sprite):
         self.rect.x=self.rect.x+self.gaurdspeed*self.direction
     def changedirection(self):
         self.direction=self.direction*-1
-
+        self.image=pygame.transform.flip(self.image,True,False)
 
 
 
@@ -73,28 +81,29 @@ diamonds=pygame.sprite.Group()
 diamond=Diamond(WIDTH/2,60)
 diamonds.add(diamond)
 
+robers=pygame.sprite.Group()
+rober=Rober(30,750)
+robers.add(rober)
+
+gaurds=pygame.sprite.Group()
+for i in range(0,numberofgaurds):
+    gaurd=Gaurd(random.randint(10,WIDTH-10),random.randint(30,HEIGHT-30))
+    gaurds.add(gaurd)
+
+
+
 walls=pygame.sprite.Group()
 while wallscreated<numberofwalls:
     alignment=random.randint(0,1)
     wallx=random.randint(0,WIDTH-wallwidth)
     wally=random.randint(0,HEIGHT-wallwidth)
     wall=Wall(wallx,wally,alignment)
-    if pygame.sprite.spritecollideany(wall,walls) and pygame.sprite.spritecollideany(wall,diamonds):
+    if pygame.sprite.spritecollideany(wall,walls) and pygame.sprite.spritecollideany(wall,diamonds) and pygame.sprite.spritecollideany(wall,robers):
         print("collision")
         continue
     walls.add(wall)
     wallscreated=wallscreated+1
-
-robers=pygame.sprite.Group()
-rober=Rober(30,750)
-robers.add(rober)
-
-
-
-gaurds=pygame.sprite.Group()
-for i in range(0,numberofgaurds):
-    gaurd=Gaurd(random.randint(10,WIDTH-10),random.randint(30,HEIGHT-30))
-    gaurds.add(gaurd)
+    
 
 while run:
     clock.tick(fps)
@@ -113,6 +122,13 @@ while run:
     for gaurd in gaurds.sprites():
         if pygame.sprite.spritecollideany(gaurd,walls) or gaurd.rect.x>=WIDTH-10 or gaurd.rect.x<=10:
             gaurd.changedirection()
+    if pygame.sprite.collide_rect(rober,diamond):
+        roberpos=rober.getroberpos()
+        diamond.new_movement(roberpos)
+    screen.blit(text1,(WIDTH-90,HEIGHT-90))
+    exitrect=text1.get_rect(topleft=(WIDTH-90,HEIGHT-90))
+    if rober.rect.colliderect(exitrect) and diamond.rect.colliderect(exitrect):
+        print("game over")
 
     pygame.display.update()
 
