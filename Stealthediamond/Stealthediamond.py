@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 pygame.init()
 
@@ -12,11 +13,12 @@ wallscreated=0
 run=True
 wallwidth=70
 wallheight=20
-fps=60
+fps=30
 clock=pygame.time.Clock()
 numberofgaurds=3
 font=pygame.font.SysFont("Ariel", 40)
 text1=font.render("EXIT",True,(255,0,0))
+starttime=time.time()
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self,wallx,wally,alignment):
@@ -106,31 +108,40 @@ while wallscreated<numberofwalls:
     
 
 while run:
-    clock.tick(fps)
-    for event in pygame.event.get():
-        if event.type==pygame.QUIT:
-            run=False
-            pygame.quit()
-    screen.fill((0,0,0))
-    walls.draw(screen)
-    robers.draw(screen)
-    keypressed=pygame.key.get_pressed()
-    robers.update(keypressed)
-    diamonds.draw(screen)
-    gaurds.draw(screen)
-    gaurds.update()
-    for gaurd in gaurds.sprites():
-        if pygame.sprite.spritecollideany(gaurd,walls) or gaurd.rect.x>=WIDTH-10 or gaurd.rect.x<=10:
-            gaurd.changedirection()
-    if pygame.sprite.collide_rect(rober,diamond):
-        roberpos=rober.getroberpos()
-        diamond.new_movement(roberpos)
-    screen.blit(text1,(WIDTH-90,HEIGHT-90))
-    exitrect=text1.get_rect(topleft=(WIDTH-90,HEIGHT-90))
-    if rober.rect.colliderect(exitrect) and diamond.rect.colliderect(exitrect):
-        print("game over")
+        #clock.tick(fps)
+        timeelapsed=time.time() - starttime
+    # if timeelapsed>=30:
+    #     if :
+    #         youwin=font.render("You Win",True,(0,0,0))
+    #         screen.blit(youwin,(WIDTH/2,HEIGHT/2))
+    #     else:
+    #         youloose=font.render("You Loose",True,(0,0,0))
+    #         screen.blit(youloose,(WIDTH/2,HEIGHT/2))
+    # else:
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
+                run=False
+                pygame.quit()
+        screen.fill((0,0,0))
+        walls.draw(screen)
+        robers.draw(screen)
+        keypressed=pygame.key.get_pressed()
+        robers.update(keypressed)
+        diamonds.draw(screen)
+        gaurds.draw(screen)
+        gaurds.update()
+        for gaurd in gaurds.sprites():
+            if pygame.sprite.spritecollideany(gaurd,walls) or gaurd.rect.x>=WIDTH-10 or gaurd.rect.x<=10:
+                gaurd.changedirection()
+        if pygame.sprite.collide_rect(rober,diamond):
+            roberpos=rober.getroberpos()
+            diamond.new_movement(roberpos)
+        screen.blit(text1,(WIDTH-90,HEIGHT-90))
+        exitrect=text1.get_rect(topleft=(WIDTH-90,HEIGHT-90))
+        if rober.rect.colliderect(exitrect) and diamond.rect.colliderect(exitrect):
+            print("game over")
 
-    pygame.display.update()
+        pygame.display.update()
 
 
 
