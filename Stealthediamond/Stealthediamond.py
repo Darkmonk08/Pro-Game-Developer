@@ -21,6 +21,8 @@ font=pygame.font.SysFont("Ariel", 40)
 text1=font.render("EXIT",True,(255,0,0))
 game_over_text = font.render("Game Over!", True, (255, 0, 0))
 starttime=time.time()
+gamerun=True
+
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self,wallx,wally,alignment):
@@ -84,6 +86,13 @@ class Gaurd(pygame.sprite.Sprite):
         self.image=pygame.transform.flip(self.image,True,False)
 
 
+def gameover(text):
+    screen.fill((0,0,0))
+    message=font.render(text,True,(0,0,0))
+    screen.blit(message,(WIDTH/2,HEIGHT/2))
+    pygame.display.update()
+    pygame.time.delay(3000)
+
 
 diamonds=pygame.sprite.Group()
 diamond=Diamond(WIDTH/2,60)
@@ -129,15 +138,9 @@ while run:
             run=False
             pygame.quit()
 
-    # if timeelapsed>=30:
-    #     print()
-    #     # if :
-    #     #     youwin=font.render("You Win",True,(0,0,0))
-    #     #     screen.blit(youwin,(WIDTH/2,HEIGHT/2))
-    #     # else:
-    #     #     youloose=font.render("You Loose",True,(0,0,0))
-    #     #     screen.blit(youloose,(WIDTH/2,HEIGHT/2))
-    # else:
+    if timeelapsed>=5:
+        gamerun=False
+    
     
     screen.fill((0,0,0))
     walls.draw(screen)
@@ -166,6 +169,12 @@ while run:
     exitrect=text1.get_rect(topleft=(WIDTH-90,HEIGHT-90))
     if rober.rect.colliderect(exitrect) and diamond.rect.colliderect(exitrect):
         print("game over")
+
+    if not gamerun:
+        gameover("You Lose")
+        print("you lost")
+        run=False
+        pygame.quit()
 
     pygame.display.update()
 
